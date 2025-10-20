@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>团队破冰与连结卡牌 | Team Icebreaker Cards</title>
+<style>
+  :root{
+    --bg:#fff7ec;
+    --card:#fff;
+    --accent1:#ffb347; /* orange */
+    --accent2:#ffd27f; /* light */
+    --text:#333;
+    --muted:#666;
+  }
+  *{box-sizing:border-box;font-family:Inter, "Helvetica Neue", Arial, "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif}
+  body{margin:0;min-height:100vh;background:linear-gradient(180deg,var(--bg),#fff);display:flex;align-items:center;justify-content:center;padding:24px;color:var(--text)}
+  .wrap{width:100%;max-width:540px;background:linear-gradient(135deg,var(--accent1),var(--accent2));border-radius:18px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,0.12)}
+  header{display:flex;align-items:center;gap:12px;color:#4b2e00}
+  .logo{width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+  h1{margin:0;font-size:18px}
+  p.lead{margin:6px 0 12px;font-size:13px;color:var(--muted)}
+  .card-area{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .card-scene{perspective:1000px;width:100%;height:320px;display:flex;align-items:center;justify-content:center}
+  .card{width:100%;max-width:420px;height:260px;border-radius:14px;background:var(--card);box-shadow:0 10px 20px rgba(0,0,0,0.12);position:relative;transform-style:preserve-3d;transition:transform 600ms cubic-bezier(.2,.9,.3,1)}
+  .card.flipped{transform:rotateY(180deg)}
+  .card-face{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;padding:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  .card-front{background:linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.95));}
+  .card-back{background:linear-gradient(135deg,var(--accent2),#fff);transform:rotateY(180deg);}
+  .q{font-size:20px;line-height:1.35;margin-bottom:8px;color:#2b1b00;font-weight:600}
+  .q-en{font-size:13px;color:var(--muted);margin-bottom:6px}
+  .tip{font-size:13px;color:#4b2e00;margin-top:8px}
+  .controls{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:8px}
+  button{border:0;padding:12px 16px;border-radius:10px;background:#fff;cursor:pointer;font-weight:600;box-shadow:0 6px 14px rgba(0,0,0,0.08)}
+  button.primary{background:#ffb347;color:#4b2e00}
+  .small{font-size:12px;color:var(--muted)}
+  footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:var(--muted);font-size:12px}
+  .counter{background:rgba(255,255,255,0.6);padding:6px 10px;border-radius:999px;font-weight:600}
+  .signature{font-weight:700}
+  @media (max-width:420px){
+    .card{height:220px}
+    .q{font-size:18px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" role="application" aria-label="团队破冰与连结卡牌">
+  <header>
+    <div class="logo">🎴</div>
+    <div>
+      <h1>团队破冰与连结卡牌<br><span style="font-size:12px;color:#5b3a00">Team Icebreaker Cards</span></h1>
+      <p class="lead">趣味卡通风 · 翻转抽卡 · 中英双语 · 随机暖心提示</p>
+    </div>
+  </header>
+
+  <main class="card-area">
+    <div class="card-scene" aria-live="polite">
+      <div id="card" class="card" role="button" tabindex="0" aria-pressed="false" aria-label="抽卡，按下或点击以翻转并显示问题">
+        <div class="card-face card-front" id="front">
+          <div class="q" id="qcn">点击「抽卡」开始</div>
+          <div class="q-en" id="qen">Click "Draw" to start</div>
+          <div class="tip" id="tip">💡 小贴士：倾听彼此的故事，才能更了解团队。</div>
+        </div>
+        <div class="card-face card-back" id="back" aria-hidden="true">
+          <div class="q" id="qcn_back">准备好了吗？</div>
+          <div class="q-en" id="qen_back">Are you ready?</div>
+          <div class="tip" id="tip_back">🏋🏻 Sean</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="draw" class="primary" aria-label="抽卡">抽卡 · Draw</button>
+      <button id="next" aria-label="下一题">下一题 · Next</button>
+      <div class="counter" id="count">0 / 60</div>
+    </div>
+
+    <div style="margin-top:8px;text-align:center" class="small">署名：<span class="signature">Sean🏋🏻</span></div>
+
+  </main>
+
+  <footer>
+    <div class="small">风格：趣味卡通 · 翻转动画</div>
+    <div class="small">中英双语 / 随机提示</div>
+  </footer>
+</div>
+
+<script>
+// Questions array (60 bilingual pairs)
+const cards = [
+["如果今天突然放假，你会怎么安排？","If today became a holiday, how would you spend it?"],
+["你最喜欢的饮料或零食是什么？","What's your favorite drink or snack?"],
+["说一个朋友给你取过的外号。","Share a nickname a friend once gave you."],
+["如果可以瞬间学会一项技能，会选什么？","If you could instantly learn one skill, what would it be?"],
+["你平常最放松的方式是什么？","What relaxes you the most?"],
+["最近让你笑到不行的事情？","What recently made you laugh out loud?"],
+["你是喜欢早睡还是熬夜？","Are you an early bird or a night owl?"],
+["你最怕听到哪句话？","What's a phrase you dread hearing?"],
+["说出一个你的小怪癖。","Name one quirky habit you have."],
+["你最想去的国家或城市是哪里？","Which country or city do you most want to visit?"],
+["三个形容自己的词。","Three words to describe yourself."],
+["你比较偏向计划型还是随性型？","Are you more of a planner or spontaneous?"],
+["你在团队中通常扮演什么角色？","What role do you usually play in a team?"],
+["面对挑战时，你第一反应是什么？","What's your first reaction to a challenge?"],
+["朋友最常称赞你的地方是？","What do friends most often praise about you?"],
+["你觉得自己最强的优点是什么？","What's your strongest quality?"],
+["你喜欢被怎样的人带领？","What kind of person do you like to be led by?"],
+["你做决定时靠直觉还是逻辑？","Do you decide by instinct or logic?"],
+["你理想中的合作伙伴是什么样的人？","What is your ideal partner like?"],
+["你最看重朋友或同伴的哪种特质？","Which trait do you value most in friends or teammates?"],
+["哪一个经历让你成长最多？","Which experience made you grow the most?"],
+["你今年最想改善自己的哪一部分？","What's one thing you want to improve this year?"],
+["你希望别人怎么看待你？","How do you want others to see you?"],
+["说一个你曾经克服的困难。","Describe a challenge you have overcome."],
+["在团队中你最重视什么价值？","What value do you care about most in a team?"],
+["你最感激谁？为什么？","Who are you most grateful for and why?"],
+["你认为理想的团队是什么样？","What does an ideal team look like to you?"],
+["如果团队是一支球赛，你是什么位置？","If the team were a match, what position would you be?"],
+["你希望团队带给你的是什么？","What do you hope the team brings to you?"],
+["你觉得一个好领导最重要的特质是？","What is the most important trait of a good leader?"],
+["请和左边的人互相说一句鼓励的话。","Tell the person on your left an encouraging sentence."],
+["与右边的人一起摆出‘胜利’姿势。","Strike a 'victory' pose with the person on your right."],
+["3 秒内和同伴同时比出一个相同的手势！","In 3 seconds, make the same gesture as your partner!"],
+["分享一次你和别人完美配合的经验。","Share a time when you perfectly cooperated with someone."],
+["描述理想团队合作的样子。","Describe what ideal teamwork looks like."],
+["互相说出彼此的一项优点。","Tell each other one strength you notice."],
+["团队成功最需要的三种特质？","What three traits are most needed for team success?"],
+["你欣赏哪种类型的队友？","What type of teammate do you admire?"],
+["分享一个让你觉得‘我们真的像团队’的时刻。","Share a moment you felt 'we are truly a team'."],
+["今天结束后，你想对团队说一句什么？","What would you like to say to the team at the end of today?"],
+["今天活动中，你最大的收获是什么？","What's your biggest takeaway from today's activity?"],
+["团队中谁让你印象最深？","Who in the team impressed you the most?"],
+["今天你最感激的瞬间是？","What's the moment today you felt most grateful?"],
+["这次活动让你学到了什么？","What did you learn from this activity?"],
+["如果重新来一次，你会有什么不同？","If you could do it again, what would you do differently?"],
+["你觉得自己为团队带来了什么？","What do you think you brought to the team?"],
+["谁让你感受到被支持？","Who made you feel supported?"],
+["你想对团队说的一句话是？","What's one thing you'd like to say to the team?"],
+["未来希望团队更注重哪一点？","What should the team focus on more in the future?"],
+["用一个词形容今天的气氛。","Describe today's atmosphere in one word."],
+["发明一个代表团队的口号。","Invent a slogan that represents the team."],
+["为团队取一个创意名字。","Give the team a creative name."],
+["模仿团队里某个人 5 秒钟（善意地！）。","Imitate someone in the team for 5 seconds (kindly!)." ],
+["用三个动作表现‘团结’。","Use three gestures to show 'unity'."],
+["把团队精神变成一句广告词。","Turn team spirit into a tagline."],
+["设计一个‘团队贴纸’口号。","Design a slogan for a team sticker."],
+["每人用 3 秒讲一句‘理想团队宣言’。","Each person in 3s says one 'ideal team declaration'."],
+["和搭档比一次默契表情。","Compete with your partner in a synchronized expression."],
+["用肢体做出‘成长’两个字。","Use body gestures to form the word 'growth'."],
+["轮流说出一句：‘我喜欢我们的团队，因为…’","Take turns saying: 'I like our team because...'" ]
+];
+
+const tips = [
+"💡 倾听彼此的故事，才能更了解团队。",
+"🌟 放轻松，没有标准答案哦！",
+"👂 多问一句，会有不同的发现。",
+"🤝 鼓励是最简单的信任表达。",
+"🎯 目标一致，比努力更重要。",
+"🗣️ 分享小失败，也能拉近距离。",
+"😊 用幽默打破尴尬。",
+"🧭 保持好奇，探索队友的长处。"
+];
+
+let usedIndexes = [];
+let current = -1;
+
+function randIndex(){
+  if(usedIndexes.length >= cards.length){ usedIndexes = []; } // reset when exhausted
+  let idx;
+  do { idx = Math.floor(Math.random()*cards.length); } while(usedIndexes.includes(idx));
+  usedIndexes.push(idx);
+  return idx;
+}
+
+function showCard(idx){
+  const front = document.getElementById('front');
+  const back = document.getElementById('back');
+  const qcn = document.getElementById('qcn');
+  const qen = document.getElementById('qen');
+  const qcn_back = document.getElementById('qcn_back');
+  const qen_back = document.getElementById('qen_back');
+  const tip = document.getElementById('tip');
+  const tip_back = document.getElementById('tip_back');
+  const count = document.getElementById('count');
+  const cardEl = document.getElementById('card');
+  const pair = cards[idx];
+  qcn.textContent = pair[0];
+  qen.textContent = pair[1];
+  qcn_back.textContent = "移至背面： " + pair[0];
+  qen_back.textContent = "Back: " + pair[1];
+  tip.textContent = tips[Math.floor(Math.random()*tips.length)];
+  tip_back.textContent = "🏋🏻 Sean";
+  count.textContent = usedIndexes.length + " / " + cards.length;
+  // flip animation
+  cardEl.classList.add('flipped');
+  cardEl.setAttribute('aria-pressed','true');
+  setTimeout(()=>{
+    // unflip after short delay so user sees back, then revert to show front for next card
+    cardEl.classList.remove('flipped');
+    cardEl.setAttribute('aria-pressed','false');
+  }, 800);
+}
+
+document.getElementById('draw').addEventListener('click', ()=> {
+  const idx = randIndex();
+  current = idx;
+  showCard(idx);
+});
+document.getElementById('next').addEventListener('click', ()=> {
+  const idx = randIndex();
+  current = idx;
+  showCard(idx);
+});
+// also allow pressing the card to draw next
+document.getElementById('card').addEventListener('click', ()=> {
+  const idx = randIndex();
+  current = idx;
+  showCard(idx);
+});
+// keyboard accessibility: press space or enter
+document.addEventListener('keydown', (e)=>{
+  if(e.key === ' ' || e.key === 'Enter'){
+    e.preventDefault();
+    const idx = randIndex();
+    current = idx;
+    showCard(idx);
+  }
+});
+</script>
+</body>
+</html>
